@@ -1,13 +1,13 @@
-package crud.hsqldb.test;
+package crud.hsqldb;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CrudHsqldbTestApplication {
+public class CrudHsqldbApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CrudHsqldbTestApplication.class, args);
+		SpringApplication.run(CrudHsqldbApplication.class, args);
 	}
 
 }

@@ -8,10 +8,10 @@
 		<version>2.2.2.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>crud.test</groupId>
-	<artifactId>crud-hsqldb-test</artifactId>
+	<groupId>tutorial.crud</groupId>
+	<artifactId>crud-hsqldb</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>CrudHsqldbTest</name>
+	<name>CrudHsqldb</name>
 	<description>CRUD para as tabelas de teste do HSQLDB</description>
 
 	<properties>
