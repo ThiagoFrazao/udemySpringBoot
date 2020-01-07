@@ -1,10 +1,9 @@
 package crud.hsqldb.models;
 
-
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -12,37 +11,42 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.validation.constraints.NotEmpty;
 
+import crud.hsqldb.security.roles.SecurityRoles;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "INVOICE" )
+@Table(name = "USER")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class Invoice {
+public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
+	@Column(nullable = false,unique = true)
+	@NotEmpty
+	private String email;
+	
+	@Column(nullable = false)
+	@NotEmpty
+	private String password;
+	
+	@Enumerated(EnumType.STRING)
+	private SecurityRoles role;
 	
 	@OneToOne
 	@JoinColumn(name = "CUSTOMERID")
 	private Customer customer;
 	
-	private Float total;
-	
-	@Column(name = "LAUNCHDATE")
-	@Temporal(TemporalType.DATE)
-	private Date launchDate;
-	
 	@PrePersist
 	public void prePersist() {
-		if(this.launchDate == null) {
-			this.launchDate = new Date();
-		}		
+		if(this.role == null) {
+			this.role = SecurityRoles.ROLE_USER;
+		}
 	}
 }

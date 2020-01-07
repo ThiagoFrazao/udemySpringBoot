@@ -4,11 +4,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.websocket.server.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,19 +48,26 @@ public class CustomerController {
 	}
 	
 	@PostMapping("/add")
-	public ResponseEntity<String> addCustomer(@RequestBody Customer customer){
-		if(customerRepository.alreadyExists(customer)) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).body("Customer already registered.");
+	public ResponseEntity<String> addCustomer(@Valid @RequestBody Customer customer,BindingResult bindResult){
+		if(bindResult.hasErrors()) {
+			StringBuilder strBuilder = new StringBuilder("The received Customer is not valid:\n");
+			bindResult.getAllErrors().forEach(error -> strBuilder.append(error.getDefaultMessage()));
+			return ResponseEntity.badRequest().body(strBuilder.toString());
 		} else {
-			Customer createdCustomer = customerRepository.save(customer);
-			URI customerUri = null;
-			try {
-				customerUri = new URI(String.format("http://localhost:8080/crud/customer/find/%d", createdCustomer.getId()));
-			} catch (URISyntaxException e) {
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A server error ocurred. Try again later.");
+			if(customerRepository.alreadyExists(customer)) {
+				return ResponseEntity.status(HttpStatus.CONFLICT).body("Customer already registered.");
+			} else {
+				Customer createdCustomer = customerRepository.save(customer);
+				URI customerUri = null;
+				try {
+					customerUri = new URI(String.format("http://localhost:8080/crud/customer/find/%d", createdCustomer.getId()));
+				} catch (URISyntaxException e) {
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A server error ocurred. Try again later.");
+				}
+				return ResponseEntity.created(customerUri).body("Customer created successfully.");
 			}
-			return ResponseEntity.created(customerUri).body("Customer created successfully.");
 		}
+		
 	}
 	
 	@PutMapping("/update")
