@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import crud.hsqldb.models.User;
 import crud.hsqldb.repositories.UserRepository;
-import crud.hsqldb.security.utils.JwtUserFactory;
+import crud.hsqldb.security.JwtUserFactory;
 
 @Service
 public class JwtUserDetailsServiceImpl implements UserDetailsService {

@@ -2,7 +2,7 @@ package crud.hsqldb.controllers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
+import java.util.Iterator;
 
 import javax.validation.Valid;
 import javax.websocket.server.PathParam;
@@ -13,15 +13,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import crud.hsqldb.models.Customer;
+import crud.hsqldb.models.User;
 import crud.hsqldb.repositories.CustomerRepository;
+import crud.hsqldb.repositories.UserRepository;
+import crud.hsqldb.utils.PasswordUtils;
 
 @RestController
 @RequestMapping("/crud/customer")
@@ -30,13 +35,19 @@ public class CustomerController {
 	@Autowired
 	private CustomerRepository customerRepository;
 	
+	@Autowired
+	private UserRepository userRespository;
+	
+	@Autowired
+	private PasswordUtils passwordUtils;
+	
 	@GetMapping
-	public List<Customer> getAllCustomers(){
-		return (List<Customer>) customerRepository.findAll();
+	public ResponseEntity<Iterator<Customer>> getAllCustomers(){
+		return ResponseEntity.ok(customerRepository.findAll().iterator());
 	}
 	
 	@GetMapping("/find/{id}")
-	public ResponseEntity<Customer> getCustomerById(@PathParam(value = "id") Integer id){
+	public ResponseEntity<Customer> getCustomerById(@PathVariable(value = "id") Integer id){
 		return customerRepository.findById(id).map(customer -> {return ResponseEntity.ok(customer);})
 					.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
@@ -51,16 +62,23 @@ public class CustomerController {
 	public ResponseEntity<String> addCustomer(@Valid @RequestBody Customer customer,BindingResult bindResult){
 		if(bindResult.hasErrors()) {
 			StringBuilder strBuilder = new StringBuilder("The received Customer is not valid:\n");
-			bindResult.getAllErrors().forEach(error -> strBuilder.append(error.getDefaultMessage()));
+			bindResult.getAllErrors().forEach(error -> strBuilder.append(error.getDefaultMessage()+"\n"));
 			return ResponseEntity.badRequest().body(strBuilder.toString());
 		} else {
 			if(customerRepository.alreadyExists(customer)) {
 				return ResponseEntity.status(HttpStatus.CONFLICT).body("Customer already registered.");
 			} else {
+				
+				User userInfo = customer.getUserInfo();
+				userInfo.setPassword(passwordUtils.hashPassword(userInfo.getPassword()));
+				userRespository.save(userInfo); 
+				customer.setUserInfo(userInfo);
 				Customer createdCustomer = customerRepository.save(customer);
 				URI customerUri = null;
 				try {
-					customerUri = new URI(String.format("http://localhost:8080/crud/customer/find/%d", createdCustomer.getId()));
+					String uriTemplate = ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString() + 
+										 "/crud/customer/find/%d";
+					customerUri = new URI(String.format(uriTemplate, createdCustomer.getId()));
 				} catch (URISyntaxException e) {
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A server error ocurred. Try again later.");
 				}

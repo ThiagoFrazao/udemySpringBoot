@@ -1,4 +1,4 @@
-package crud.hsqldb.security;
+package crud.hsqldb.security.utils;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -6,11 +6,13 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+@Component
 public class JwtTokensUtils {
 	
 	private static final String CLAIM_KEY_USERNAME = "sub";
@@ -18,30 +20,30 @@ public class JwtTokensUtils {
 	private static final String CLAIM_KEY_CREATED = "created";
 	
 	@Value("${jwt.secret}")
-	private static String secret;
+	private String secret;
 	
 	@Value("${jwt.expiration}")
-	private static Long expiration;
+	private Long expiration;
 	
-	public static String getUsernameFromToken(String token) {
+	public String getUsernameFromToken(String token) {
 		return getClaimsFromToken(token).getSubject();
 	}
 	
-	public static Date getExpirationDateFromToken(String token) {
+	public  Date getExpirationDateFromToken(String token) {
 		return getClaimsFromToken(token).getExpiration();
 	}
 	
-	public static String refreshToken(String token) {
+	public  String refreshToken(String token) {
 		Claims claims = getClaimsFromToken(token);
 		claims.put(CLAIM_KEY_CREATED, new Date());
 		return generateToken(claims);
 	}
 	
-	public static boolean validateToken(String token) {
+	public  boolean validateToken(String token) {
 		return !expiredToken(token);
 	}
 	
-	public static String createToken(UserDetails userDetails) {
+	public  String createToken(UserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put(CLAIM_KEY_USERNAME,userDetails.getUsername());
 		userDetails.getAuthorities().forEach(authority -> claims.put(CLAIM_KEY_ROLE,authority.getAuthority()));
@@ -49,24 +51,20 @@ public class JwtTokensUtils {
 		return generateToken(claims);
 	}
 
-	private static String generateToken(Map<String, Object> claims) {
+	private  String generateToken(Map<String, Object> claims) {
 		return Jwts.builder().setClaims(claims).setExpiration(generateExpirationDate())
 				   .signWith(SignatureAlgorithm.HS512,secret).compact();
 	}
 	
-	private static Date generateExpirationDate() {
+	private  Date generateExpirationDate() {
 		return new Date(System.currentTimeMillis() + expiration * 1000);
 	}
 
-	private static boolean expiredToken(String token) {
+	private  boolean expiredToken(String token) {
 		return getExpirationDateFromToken(token).before(new Date());
 	}
 
-
-	private static Claims getClaimsFromToken(String token) {
+	private  Claims getClaimsFromToken(String token) {
 		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
 	}
-	
-	
-
 }

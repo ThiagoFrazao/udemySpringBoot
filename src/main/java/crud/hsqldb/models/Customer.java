@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class Customer {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY	)
 	private Integer id;
 	
 	@NotEmpty(message = "FirstName can't be empty.")
@@ -37,6 +37,6 @@ public class Customer {
 	private String city;
 	
 	@OneToOne
-	@JoinColumn(name = "USERINFO")
+	@JoinColumn(name = "USERINFO",nullable = false)
 	private User userInfo;
 }

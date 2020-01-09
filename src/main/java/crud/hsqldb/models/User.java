@@ -7,10 +7,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 import crud.hsqldb.security.roles.SecurityRoles;
@@ -29,19 +28,24 @@ public class User {
 	private Integer id;
 	
 	@Column(nullable = false,unique = true)
-	@NotEmpty
+	@NotEmpty(message = "Email can't be empty.")
+	@Email(message = "Invalid email.")
 	private String email;
 	
 	@Column(nullable = false)
-	@NotEmpty
+	@NotEmpty(message = "Password can't be empty.")
 	private String password;
 	
 	@Enumerated(EnumType.STRING)
 	private SecurityRoles role;
 	
-	@OneToOne
-	@JoinColumn(name = "CUSTOMERID")
-	private Customer customer;
+	public SecurityRoles getRole() {
+		if(this.role == null) {
+			return SecurityRoles.ROLE_USER;
+		} else {
+			return this.role;
+		}
+	}
 	
 	@PrePersist
 	public void prePersist() {
