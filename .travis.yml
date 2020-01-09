@@ -4,3 +4,12 @@ jdk:
   - openjdk8
 before_install:
   - chmod +x mvnw
+
+deploy: 
+  provider: heroku
+  api_key:
+      secure:
+          10851e98-04f9-4667-8dfe-3b746e61ec85
+  app: crud-spring-hsqldb
+  on:
+    repo: ThiagoFrazao/udemySpringBoot
