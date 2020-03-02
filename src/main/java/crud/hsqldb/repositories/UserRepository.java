@@ -9,5 +9,7 @@ import crud.hsqldb.models.User;
 public interface UserRepository extends CrudRepository<User,Integer>{
 	Optional<User> findByEmail(String email);
 	
-	
+	default boolean existsByEmail(String email) {
+		return findByEmail(email).isPresent(); 
+	}
 }

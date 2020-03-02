@@ -17,7 +17,7 @@ public class UserController {
 	private UserRepository userRepository;
 	
 	@GetMapping
-	public ResponseEntity<Iterable<User>> updateAll(){
+	public ResponseEntity<Iterable<User>> getAllUsers(){
 		return ResponseEntity.ok(userRepository.findAll());
 	}
 	

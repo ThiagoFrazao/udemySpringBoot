@@ -68,24 +68,28 @@ public class CustomerController {
 			if(customerRepository.alreadyExists(customer)) {
 				return ResponseEntity.status(HttpStatus.CONFLICT).body("Customer already registered.");
 			} else {
-				
 				User userInfo = customer.getUserInfo();
-				userInfo.setPassword(passwordUtils.hashPassword(userInfo.getPassword()));
-				userRespository.save(userInfo); 
-				customer.setUserInfo(userInfo);
-				Customer createdCustomer = customerRepository.save(customer);
-				URI customerUri = null;
-				try {
-					String uriTemplate = ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString() + 
-										 "/crud/customer/find/%d";
-					customerUri = new URI(String.format(uriTemplate, createdCustomer.getId()));
-				} catch (URISyntaxException e) {
-					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A server error ocurred. Try again later.");
+				if(userRespository.existsByEmail(userInfo.getEmail())){
+					return ResponseEntity.status(HttpStatus.CONFLICT)
+							.body(String.format("The email %s is already being used.", userInfo.getEmail()));
+				} else {
+					//### criptografando senha ###
+					userInfo.setPassword(passwordUtils.hashPassword(userInfo.getPassword()));
+					userRespository.save(userInfo); 
+					customer.setUserInfo(userInfo);
+					Customer createdCustomer = customerRepository.save(customer);
+					URI customerUri = null;
+					try {
+						String uriTemplate = ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString() + 
+											 "/crud/customer/find/%d";
+						customerUri = new URI(String.format(uriTemplate, createdCustomer.getId()));
+					} catch (URISyntaxException e) {
+						return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A server error ocurred. Try again later.");
+					}
+					return ResponseEntity.created(customerUri).body("Customer created successfully.");
 				}
-				return ResponseEntity.created(customerUri).body("Customer created successfully.");
 			}
 		}
-		
 	}
 	
 	@PutMapping("/update")

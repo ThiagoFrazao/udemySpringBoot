@@ -16,16 +16,19 @@ import crud.hsqldb.utils.PasswordUtils;
 @SpringBootApplication
 public class CrudHsqldbApplication {
 	
+	public static void main(String[] args) {
+		 SpringApplication.run(CrudHsqldbApplication.class, args); 
+	}
+	
 	@Autowired
 	private UserRepository userRepo;
 	
 	@Autowired
 	private CustomerRepository custRepo;
 	
-	public static void main(String[] args) {
-		SpringApplication.run(CrudHsqldbApplication.class, args);
-	}
-	
+	/* Create a USER to be used on Heroku 
+	 * Should be commented if run in Localhost
+	 */
 	@Bean
 	public CommandLineRunner commandLineRunner() {
 		return args -> {
